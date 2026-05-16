@@ -1,0 +1,54 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Go
+backend/vendor/
+backend/*.exe
+backend/*.exe~
+backend/*.dll
+backend/*.so
+backend/*.dylib
+backend/*.test
+backend/*.out
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+frontend/dist/
+backend/main
+
+# Docker
+*.log
+
+# Logs
+logs/
+*.log
+
+# Database
+*.db
+*.sqlite
+
+# AI assistant artifacts
+.qwen/
+qwen-code-export-*
+tz.txt
+photo_*
