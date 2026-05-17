@@ -55,3 +55,9 @@ func (r *UserRepository) Count() int64 {
 	r.db.Model(&models.User{}).Count(&count)
 	return count
 }
+
+func (r *UserRepository) GetAll() ([]models.User, error) {
+	var users []models.User
+	err := r.db.Order("created_at DESC").Find(&users).Error
+	return users, err
+}

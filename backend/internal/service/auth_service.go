@@ -58,7 +58,7 @@ func (s *AuthService) Register(input RegisterInput) (*models.User, string, error
 		return nil, "", err
 	}
 
-	token, err := s.jwtUtils.GenerateToken(user.ID, user.Email, user.Nickname)
+	token, err := s.jwtUtils.GenerateToken(user.ID, user.Email, user.Nickname, user.Role)
 	if err != nil {
 		return nil, "", err
 	}
@@ -76,7 +76,7 @@ func (s *AuthService) Login(input LoginInput) (*models.User, string, error) {
 		return nil, "", errors.New("invalid email or password")
 	}
 
-	token, err := s.jwtUtils.GenerateToken(user.ID, user.Email, user.Nickname)
+	token, err := s.jwtUtils.GenerateToken(user.ID, user.Email, user.Nickname, user.Role)
 	if err != nil {
 		return nil, "", err
 	}
@@ -110,7 +110,7 @@ func (s *AuthService) UpdateProfile(userID uuid.UUID, input UpdateProfileInput) 
 		return nil, "", err
 	}
 
-	token, err := s.jwtUtils.GenerateToken(user.ID, user.Email, user.Nickname)
+	token, err := s.jwtUtils.GenerateToken(user.ID, user.Email, user.Nickname, user.Role)
 	if err != nil {
 		return nil, "", err
 	}

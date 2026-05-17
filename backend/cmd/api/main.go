@@ -54,6 +54,7 @@ func main() {
 	lfgHandler := handlers.NewLFGHandler(lfgRepo)
 	feedHandler := handlers.NewFeedHandler(feedService)
 	statsHandler := handlers.NewStatsHandler(userRepo, postRepo, networkRepo)
+	adminHandler := handlers.NewAdminHandler(userRepo, postRepo, articleRepo)
 
 	// Start WebSocket hub
 	chatHub := chat.NewHub()
@@ -132,6 +133,16 @@ func main() {
 		}
 
 		api.GET("/feed", feedHandler.GetFeed)
+
+		admin := api.Group("/admin", middleware.AuthMiddleware(jwtUtils), middleware.AdminMiddleware())
+		{
+			admin.GET("/users", adminHandler.GetUsers)
+			admin.GET("/posts", adminHandler.GetPosts)
+			admin.DELETE("/posts/:id", adminHandler.DeletePost)
+			admin.GET("/articles", adminHandler.GetArticles)
+			admin.POST("/articles", adminHandler.CreateArticle)
+			admin.DELETE("/articles/:id", adminHandler.DeleteArticle)
+		}
 	}
 
 	// WebSocket endpoint (outside /api/ for nginx routing)

@@ -128,3 +128,7 @@ func (r *ArticleRepository) GetByID(id uuid.UUID) (*models.Article, error) {
 func (r *ArticleRepository) Create(article *models.Article) error {
 	return r.db.Create(article).Error
 }
+
+func (r *ArticleRepository) Delete(id uuid.UUID) error {
+	return r.db.Delete(&models.Article{}, "id = ?", id).Error
+}

@@ -74,21 +74,23 @@ func (d *Database) Seed() error {
 		log.Println("Game servers seeded")
 	}
 
-	// Create system/editor account so posts & articles are always available
-	var userCount int64
-	d.DB.Model(&models.User{}).Count(&userCount)
-	if userCount == 0 {
+	// Always ensure admin account exists
+	var adminUser models.User
+	if err := d.DB.Where("email = ?", "admin@nereguet.ru").First(&adminUser).Error; err != nil {
 		hash, _ := bcrypt.GenerateFromPassword([]byte("Nereguet2025!"), bcrypt.DefaultCost)
 		admin := models.User{
 			Email:        "admin@nereguet.ru",
 			PasswordHash: string(hash),
 			Nickname:     "Редакция",
+			Role:         "admin",
 		}
 		if err := d.DB.Create(&admin).Error; err != nil {
 			log.Printf("Warning: could not create admin user: %v", err)
 		} else {
 			log.Println("Admin user created: admin@nereguet.ru / Nereguet2025!")
 		}
+	} else if adminUser.Role != "admin" {
+		d.DB.Model(&adminUser).Update("role", "admin")
 	}
 
 	// Seed posts and articles (uses first user as author)
