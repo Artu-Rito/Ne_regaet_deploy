@@ -10,9 +10,41 @@ import (
 	"github.com/google/uuid"
 )
 
-// Ping returns immediately — used by clients to measure HTTP RTT.
+
+// Ping возвращает текущий timestamp — клиент измеряет RTT от отправки до получения ответа
 func (h *NetworkHandler) Ping(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"ts": time.Now().UnixMilli()})
+}
+
+// SpeedTestDownload отдаёт блок нулевых байт для измерения скорости загрузки.
+// Размер по умолчанию — 2 МБ, можно задать параметром ?size=N (в байтах, макс 10 МБ).
+func (h *NetworkHandler) SpeedTestDownload(c *gin.Context) {
+	const defaultSize = 2 * 1024 * 1024  // 2 МБ
+	const maxSize     = 10 * 1024 * 1024 // 10 МБ
+
+	size := defaultSize
+	if s := c.Query("size"); s != "" {
+		if n, err := strconv.Atoi(s); err == nil && n > 0 && n <= maxSize {
+			size = n
+		}
+	}
+
+	// Отключаем кэш — каждый раз должен идти реальный запрос
+	c.Header("Cache-Control", "no-store, no-cache, must-revalidate")
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Length", strconv.Itoa(size))
+
+	// Пишем нули прямо в ответ без буферизации в памяти
+	buf := make([]byte, 64*1024) // чанк 64 КБ
+	written := 0
+	for written < size {
+		chunk := len(buf)
+		if written+chunk > size {
+			chunk = size - written
+		}
+		c.Writer.Write(buf[:chunk])
+		written += chunk
+	}
 }
 
 type NetworkHandler struct {

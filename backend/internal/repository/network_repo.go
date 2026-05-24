@@ -124,6 +124,28 @@ func (r *NetworkRepository) GetServerByID(id uuid.UUID) (*models.GameServer, err
 	return &server, nil
 }
 
+// CountTestsSince — количество тестов начиная с указанного момента времени (для статистики админки)
+func (r *NetworkRepository) CountTestsSince(since time.Time) int64 {
+	var count int64
+	r.db.Model(&models.NetworkTest{}).Where("tested_at >= ?", since).Count(&count)
+	return count
+}
+
+// CreateServer — добавляет новый игровой сервер в БД
+func (r *NetworkRepository) CreateServer(server *models.GameServer) error {
+	return r.db.Create(server).Error
+}
+
+// UpdateServer — обновляет данные существующего сервера
+func (r *NetworkRepository) UpdateServer(server *models.GameServer) error {
+	return r.db.Save(server).Error
+}
+
+// DeleteServer — удаляет сервер по ID
+func (r *NetworkRepository) DeleteServer(id uuid.UUID) error {
+	return r.db.Delete(&models.GameServer{}, "id = ?", id).Error
+}
+
 type NetworkStats struct {
 	MedianPing    float64 `json:"median_ping"`
 	AvgPing       float64 `json:"avg_ping"`

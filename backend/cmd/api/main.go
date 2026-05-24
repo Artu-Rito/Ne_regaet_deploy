@@ -54,7 +54,8 @@ func main() {
 	lfgHandler := handlers.NewLFGHandler(lfgRepo)
 	feedHandler := handlers.NewFeedHandler(feedService)
 	statsHandler := handlers.NewStatsHandler(userRepo, postRepo, networkRepo)
-	adminHandler := handlers.NewAdminHandler(userRepo, postRepo, articleRepo)
+	// networkRepo передаём в adminHandler для статистики тестов и управления серверами
+	adminHandler := handlers.NewAdminHandler(userRepo, postRepo, articleRepo, networkRepo)
 
 	// Start WebSocket hub
 	chatHub := chat.NewHub()
@@ -94,6 +95,8 @@ func main() {
 		network := api.Group("/network")
 		{
 			network.GET("/ping", networkHandler.Ping)
+			// Эндпоинт для измерения скорости загрузки — отдаёт blob нужного размера
+			network.GET("/speedtest/download", networkHandler.SpeedTestDownload)
 			network.POST("/test", middleware.AuthMiddleware(jwtUtils), networkHandler.SubmitTest)
 			network.GET("/tests", middleware.AuthMiddleware(jwtUtils), networkHandler.GetTests)
 			network.GET("/stats", middleware.AuthMiddleware(jwtUtils), networkHandler.GetStats)
@@ -136,12 +139,19 @@ func main() {
 
 		admin := api.Group("/admin", middleware.AuthMiddleware(jwtUtils), middleware.AdminMiddleware())
 		{
-			admin.GET("/users", adminHandler.GetUsers)
-			admin.GET("/posts", adminHandler.GetPosts)
+			admin.GET("/stats",   adminHandler.GetStats)   // сводная статистика дашборда
+			admin.GET("/users",   adminHandler.GetUsers)
+			admin.GET("/posts",   adminHandler.GetPosts)
 			admin.DELETE("/posts/:id", adminHandler.DeletePost)
-			admin.GET("/articles", adminHandler.GetArticles)
-			admin.POST("/articles", adminHandler.CreateArticle)
-			admin.DELETE("/articles/:id", adminHandler.DeleteArticle)
+			// Управление серверами — CRUD
+			admin.GET("/servers",        adminHandler.GetServers)
+			admin.POST("/servers",       adminHandler.CreateServer)
+			admin.PUT("/servers/:id",    adminHandler.UpdateServer)
+			admin.DELETE("/servers/:id", adminHandler.DeleteServer)
+			// Статьи оставляем для обратной совместимости
+			admin.GET("/articles",          adminHandler.GetArticles)
+			admin.POST("/articles",         adminHandler.CreateArticle)
+			admin.DELETE("/articles/:id",   adminHandler.DeleteArticle)
 		}
 	}
 
