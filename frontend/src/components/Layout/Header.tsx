@@ -3,13 +3,13 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { useChatStore } from '../../store/chatStore';
 
+// Основные ссылки навигации.
+// Статьи и Рейтинг убраны: статьи теперь публикуются в Ленте, рейтинг не несёт ценности без контекста.
 const BASE_LINKS = [
-  { to: '/',            label: 'Главная' },
-  { to: '/test',        label: 'Тест сети' },
-  { to: '/news',        label: 'Лента' },
-  { to: '/articles',    label: 'Статьи' },
-  { to: '/lfg',         label: 'Команды' },
-  { to: '/leaderboard', label: 'Рейтинг' },
+  { to: '/',     label: 'Главная' },
+  { to: '/test', label: 'Тест сети' },
+  { to: '/news', label: 'Лента' },
+  { to: '/lfg',  label: 'Команды' },
 ];
 
 const Header: React.FC = () => {
@@ -41,7 +41,8 @@ const Header: React.FC = () => {
               key={link.to}
               to={link.to}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                location.pathname === link.to
+                // Главная — точное совпадение, остальные — по префиксу
+                (link.to === '/' ? location.pathname === '/' : location.pathname.startsWith(link.to))
                   ? 'text-indigo-400 bg-indigo-500/10'
                   : 'text-slate-400 hover:text-white hover:bg-white/5'
               }`}

@@ -7,6 +7,23 @@ import BarVisualizer from '../components/NetworkTest/BarVisualizer';
 import TestChart from '../components/NetworkTest/TestChart';
 import dayjs from 'dayjs';
 
+// Пояснения к каждой метрике — показываются под значением.
+// Помогают пользователю понять что он видит без технических знаний.
+const METRIC_INFO: Record<string, { label: string; hint: string }> = {
+  ping: {
+    label: 'Пинг',
+    hint: 'Время отклика сервера. Чем меньше — тем быстрее игра реагирует на ваши действия.',
+  },
+  jitter: {
+    label: 'Джиттер',
+    hint: 'Нестабильность соединения. Высокий джиттер — ping скачет, игра «дёргается».',
+  },
+  packetLoss: {
+    label: 'Потери пакетов',
+    hint: 'Процент данных, не доставленных серверу. Даже 1-2% вызывают лаги и телепорты.',
+  },
+};
+
 const NetworkTestPage: React.FC = () => {
   const { isTesting, currentTest, stats, tests, startTest, getTests, getStats } = useTestStore();
   const { isAuthenticated } = useAuthStore();
@@ -84,73 +101,79 @@ const NetworkTestPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Your metrics */}
+      {/* Текущие показатели пользователя */}
       <section>
         <h2 className="text-center text-xl font-bold tracking-[0.2em] uppercase text-white mb-4">
           Ваши показатели
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <BarVisualizer
-            label="Ping"
-            value={ping}
-            unit="ms"
-            maxValue={300}
-            warnAt={60}
-            dangerAt={100}
-            animate={isTesting}
-          />
-          <BarVisualizer
-            label="Jitter"
-            value={jitter}
-            unit="ms"
-            maxValue={100}
-            warnAt={20}
-            dangerAt={50}
-            animate={isTesting}
-          />
-          <BarVisualizer
-            label="Packet Loss"
-            value={packetLoss}
-            unit="%"
-            maxValue={20}
-            warnAt={2}
-            dangerAt={5}
-            animate={isTesting}
-          />
-        </div>
-      </section>
-
-      {/* User historical averages (only shown when logged in) */}
-      {isAuthenticated && (
-        <section>
-          <h2 className="text-center text-xl font-bold tracking-[0.2em] uppercase text-white mb-4">
-            Ваша статистика за 7 дней
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Пинг — задержка до сервера */}
+          <div className="space-y-2">
             <BarVisualizer
-              label="Ping"
-              value={avgPing}
+              label={METRIC_INFO.ping.label}
+              value={ping}
               unit="ms"
               maxValue={300}
               warnAt={60}
               dangerAt={100}
+              animate={isTesting}
             />
+            <p className="text-xs text-slate-500 text-center px-2">{METRIC_INFO.ping.hint}</p>
+          </div>
+
+          {/* Джиттер — нестабильность пинга */}
+          <div className="space-y-2">
             <BarVisualizer
-              label="Jitter"
-              value={avgJitter}
+              label={METRIC_INFO.jitter.label}
+              value={jitter}
               unit="ms"
               maxValue={100}
               warnAt={20}
               dangerAt={50}
+              animate={isTesting}
             />
+            <p className="text-xs text-slate-500 text-center px-2">{METRIC_INFO.jitter.hint}</p>
+          </div>
+
+          {/* Потери пакетов — % недоставленных данных */}
+          <div className="space-y-2">
             <BarVisualizer
-              label="Packet Loss"
-              value={avgPacketLoss}
+              label={METRIC_INFO.packetLoss.label}
+              value={packetLoss}
               unit="%"
               maxValue={20}
               warnAt={2}
               dangerAt={5}
+              animate={isTesting}
             />
+            <p className="text-xs text-slate-500 text-center px-2">{METRIC_INFO.packetLoss.hint}</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Средние показатели за 7 дней — только для авторизованных пользователей */}
+      {isAuthenticated && (
+        <section>
+          <h2 className="text-center text-xl font-bold tracking-[0.2em] uppercase text-white mb-1">
+            Ваша статистика за 7 дней
+          </h2>
+          {/* Пояснение что это за блок */}
+          <p className="text-center text-xs text-slate-500 mb-4">
+            Средние значения по всем тестам за последние 7 дней
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <BarVisualizer label={METRIC_INFO.ping.label}       value={avgPing}       unit="ms" maxValue={300} warnAt={60}  dangerAt={100} />
+              <p className="text-xs text-slate-500 text-center px-2">{METRIC_INFO.ping.hint}</p>
+            </div>
+            <div className="space-y-2">
+              <BarVisualizer label={METRIC_INFO.jitter.label}     value={avgJitter}     unit="ms" maxValue={100} warnAt={20}  dangerAt={50}  />
+              <p className="text-xs text-slate-500 text-center px-2">{METRIC_INFO.jitter.hint}</p>
+            </div>
+            <div className="space-y-2">
+              <BarVisualizer label={METRIC_INFO.packetLoss.label} value={avgPacketLoss} unit="%"  maxValue={20}  warnAt={2}   dangerAt={5}   />
+              <p className="text-xs text-slate-500 text-center px-2">{METRIC_INFO.packetLoss.hint}</p>
+            </div>
           </div>
         </section>
       )}

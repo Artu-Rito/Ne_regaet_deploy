@@ -311,68 +311,29 @@ func (d *Database) SeedChatRooms() error {
 		name   string
 	}
 
+	// Упрощённая структура: 2 канала на игру вместо 5.
+	// «общение» — общий чат, «советы» — вопросы и фишки по игре.
 	gameChannels := map[string][]channel{
-		"CS2":        {{"general", "Общий"}, {"lfg", "Найти команду"}, {"tips", "Гайды и советы"}, {"trade", "Обмен"}, {"offtopic", "Оффтоп"}},
-		"Dota2":      {{"general", "Общий"}, {"lfg", "Найти команду"}, {"tips", "Гайды и советы"}, {"trade", "Обмен"}, {"offtopic", "Оффтоп"}},
-		"Valorant":   {{"general", "Общий"}, {"lfg", "Найти команду"}, {"tips", "Гайды и советы"}, {"clips", "Клипы"}, {"offtopic", "Оффтоп"}},
-		"Apex":       {{"general", "Общий"}, {"lfg", "Найти команду"}, {"tips", "Гайды и советы"}, {"clips", "Клипы"}, {"offtopic", "Оффтоп"}},
-		"WoW":        {{"general", "Общий"}, {"lfg", "Найти команду"}, {"tips", "Гайды и советы"}, {"trade", "Обмен"}, {"offtopic", "Оффтоп"}},
-		"PUBG":       {{"general", "Общий"}, {"lfg", "Найти команду"}, {"tips", "Гайды и советы"}, {"trade", "Обмен"}, {"offtopic", "Оффтоп"}},
-		"Overwatch2": {{"general", "Общий"}, {"lfg", "Найти команду"}, {"tips", "Гайды и советы"}, {"clips", "Клипы"}, {"offtopic", "Оффтоп"}},
+		"CS2":        {{"general", "Общение"}, {"tips", "Советы и фишки"}},
+		"Dota2":      {{"general", "Общение"}, {"tips", "Советы и фишки"}},
+		"Valorant":   {{"general", "Общение"}, {"tips", "Советы и фишки"}},
+		"Apex":       {{"general", "Общение"}, {"tips", "Советы и фишки"}},
+		"WoW":        {{"general", "Общение"}, {"tips", "Советы и фишки"}},
+		"PUBG":       {{"general", "Общение"}, {"tips", "Советы и фишки"}},
+		"Overwatch2": {{"general", "Общение"}, {"tips", "Советы и фишки"}},
 	}
 
 	gameOrder := []string{"CS2", "Dota2", "Valorant", "Apex", "WoW", "PUBG", "Overwatch2"}
 
+	// Описания для каждого канала — показываются в шапке чата
 	gameDescriptions := map[string]map[string]string{
-		"CS2": {
-			"general": "Общение по Counter-Strike 2",
-			"lfg":     "Ищем тиммейтов в CS2",
-			"tips":    "Тактики, раскидки, позиции",
-			"trade":   "Обмен скинами и предметами CS2",
-			"offtopic": "Всё остальное",
-		},
-		"Dota2": {
-			"general": "Общение по Dota 2",
-			"lfg":     "Ищем тиммейтов в Dota 2",
-			"tips":    "Гайды по героям, стратегии",
-			"trade":   "Обмен предметами Dota 2",
-			"offtopic": "Всё остальное",
-		},
-		"Valorant": {
-			"general": "Общение по Valorant",
-			"lfg":     "Ищем тиммейтов в Valorant",
-			"tips":    "Гайды по агентам, кроссхейры",
-			"clips":   "Делимся клипами и хайлайтами",
-			"offtopic": "Всё остальное",
-		},
-		"Apex": {
-			"general": "Общение по Apex Legends",
-			"lfg":     "Ищем тиммейтов в Apex",
-			"tips":    "Легенды, тактики, дроп-споты",
-			"clips":   "Делимся клипами и хайлайтами",
-			"offtopic": "Всё остальное",
-		},
-		"WoW": {
-			"general": "Общение по World of Warcraft",
-			"lfg":     "Ищем группу в WoW",
-			"tips":    "Гайды, билды, данжи",
-			"trade":   "Торговля и аукцион",
-			"offtopic": "Всё остальное",
-		},
-		"PUBG": {
-			"general": "Общение по PUBG",
-			"lfg":     "Ищем тиммейтов в PUBG",
-			"tips":    "Тактики, лут-споты, зоны",
-			"trade":   "Обмен предметами PUBG",
-			"offtopic": "Всё остальное",
-		},
-		"Overwatch2": {
-			"general": "Общение по Overwatch 2",
-			"lfg":     "Ищем тиммейтов в OW2",
-			"tips":    "Гайды по героям, компы",
-			"clips":   "Делимся клипами и хайлайтами",
-			"offtopic": "Всё остальное",
-		},
+		"CS2":        {"general": "Общение по Counter-Strike 2", "tips": "Тактики, раскидки, позиции"},
+		"Dota2":      {"general": "Общение по Dota 2", "tips": "Гайды по героям, стратегии"},
+		"Valorant":   {"general": "Общение по Valorant", "tips": "Гайды по агентам, кроссхейры"},
+		"Apex":       {"general": "Общение по Apex Legends", "tips": "Легенды, тактики, дроп-споты"},
+		"WoW":        {"general": "Общение по World of Warcraft", "tips": "Гайды, билды, данжи"},
+		"PUBG":       {"general": "Общение по PUBG", "tips": "Тактики, лут-споты, зоны"},
+		"Overwatch2": {"general": "Общение по Overwatch 2", "tips": "Гайды по героям, компы"},
 	}
 
 	var rooms []models.ChatRoom

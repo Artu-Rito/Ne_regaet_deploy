@@ -76,8 +76,15 @@ export const useChatStore = create<ChatState>((set, get) => ({
       state.ws.close();
     }
 
+    // Reset online count for previous room so indicator doesn't stay lit
+    const prevSlug = state.activeSlug;
+    const updatedOnline = { ...state.onlineByRoom };
+    if (prevSlug && prevSlug !== slug) {
+      updatedOnline[prevSlug] = 0;
+    }
+
     // Set active room IMMEDIATELY for instant UI feedback
-    set({ activeSlug: slug, ws: null });
+    set({ activeSlug: slug, ws: null, onlineByRoom: updatedOnline });
     get().markRead(slug);
 
     // Load history via REST right away, caching result

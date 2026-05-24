@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuthStore } from '../store/authStore';
 
+// Тип элемента ленты — пост или статья
 interface FeedItem {
   kind: 'post' | 'article';
   id: string;
@@ -18,17 +19,10 @@ interface FeedItem {
   created_at: string;
 }
 
-const TYPE_TABS = [
-  { value: 'all',     label: 'Всё' },
-  { value: 'post',    label: 'Посты' },
-  { value: 'guide',   label: 'Гайды' },
-  { value: 'news',    label: 'Новости' },
-  { value: 'clip',    label: 'Клипы' },
-  { value: 'article', label: 'Статьи' },
-];
-
+// Список игр для фильтра — «Все» означает без фильтрации
 const GAMES = ['Все', 'CS2', 'Dota2', 'Valorant', 'Apex', 'WoW', 'PUBG', 'Overwatch2'];
 
+// Визуальные стили бейджей по типу поста
 const TYPE_BADGE: Record<string, string> = {
   guide:   'text-green-400 bg-green-400/10',
   news:    'text-blue-400 bg-blue-400/10',
@@ -37,26 +31,28 @@ const TYPE_BADGE: Record<string, string> = {
   article: 'text-indigo-400 bg-indigo-400/10',
 };
 
+// Русские названия типов постов
 const TYPE_LABEL: Record<string, string> = {
   guide: 'Гайд', news: 'Новость', clip: 'Клип', post: 'Пост', article: 'Статья',
 };
 
-const LIMIT = 15;
+const LIMIT = 15; // Постов на страницу
 
 const NewsFeedPage: React.FC = () => {
-  const [items, setItems] = useState<FeedItem[]>([]);
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [kindFilter, setKindFilter] = useState('all');
-  const [gameFilter, setGameFilter] = useState('Все');
-  const { isAuthenticated } = useAuthStore();
-  const navigate = useNavigate();
+  const [items, setItems]       = useState<FeedItem[]>([]);
+  const [total, setTotal]       = useState(0);
+  const [page, setPage]         = useState(1);
+  const [loading, setLoading]   = useState(false);
+  const [gameFilter, setGameFilter] = useState('Все'); // Фильтр по игре
+  const { isAuthenticated }     = useAuthStore();
+  const navigate                = useNavigate();
 
-  const load = async (p: number, kind: string, game: string) => {
+  // Загружаем ленту с учётом текущих фильтров и номера страницы
+  const load = async (p: number, game: string) => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page: String(p), limit: String(LIMIT), kind });
+      // kind=all — показываем все типы (посты и статьи вместе)
+      const params = new URLSearchParams({ page: String(p), limit: String(LIMIT), kind: 'all' });
       if (game !== 'Все') params.append('game', game);
       const res = await api.get(`/feed?${params}`);
       setItems(res.data.items ?? []);
@@ -66,22 +62,30 @@ const NewsFeedPage: React.FC = () => {
     }
   };
 
+  // При смене фильтра игры — сбрасываем на первую страницу и перезагружаем
   useEffect(() => {
     setPage(1);
-    load(1, kindFilter, gameFilter);
-  }, [kindFilter, gameFilter]);
+    load(1, gameFilter);
+  }, [gameFilter]);
 
+  // При смене номера страницы — перезагружаем с теми же фильтрами
   useEffect(() => {
-    load(page, kindFilter, gameFilter);
+    load(page, gameFilter);
   }, [page]);
 
   const pages = Math.ceil(total / LIMIT);
 
   return (
     <div className="space-y-5">
-      {/* Header */}
+
+      {/* Заголовок и кнопка создания поста */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-white">Лента</h2>
+        <div>
+          <h2 className="text-2xl font-bold text-white">Лента</h2>
+          <p className="text-sm text-slate-500 mt-0.5">
+            Посты, гайды и новости от игроков и редакции
+          </p>
+        </div>
         {isAuthenticated && (
           <button className="gbtn-primary" onClick={() => navigate('/post/create')}>
             + Создать пост
@@ -89,24 +93,7 @@ const NewsFeedPage: React.FC = () => {
         )}
       </div>
 
-      {/* Type tabs */}
-      <div className="flex flex-wrap gap-1.5">
-        {TYPE_TABS.map((t) => (
-          <button
-            key={t.value}
-            onClick={() => { setKindFilter(t.value); setPage(1); }}
-            className={`px-3 py-1 rounded-full text-xs font-medium transition-colors border ${
-              kindFilter === t.value
-                ? 'bg-indigo-600 text-white border-indigo-600'
-                : 'border-[#2a2a50] text-slate-400 hover:text-white hover:border-indigo-500'
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Game filter */}
+      {/* Фильтр по игре — единственный фильтр, тип поста не важен */}
       <div className="flex flex-wrap gap-1.5">
         {GAMES.map((g) => (
           <button
@@ -123,7 +110,7 @@ const NewsFeedPage: React.FC = () => {
         ))}
       </div>
 
-      {/* Items */}
+      {/* Список постов */}
       {loading ? (
         <div className="text-slate-500 text-center py-12">Загрузка...</div>
       ) : items.length === 0 ? (
@@ -136,7 +123,7 @@ const NewsFeedPage: React.FC = () => {
         </div>
       )}
 
-      {/* Pagination */}
+      {/* Пагинация */}
       {pages > 1 && (
         <div className="flex justify-center gap-2 pt-2">
           {Array.from({ length: pages }, (_, i) => i + 1).map((p) => (
@@ -158,11 +145,13 @@ const NewsFeedPage: React.FC = () => {
   );
 };
 
+// Карточка одного поста/статьи в ленте
 const FeedCard: React.FC<{ item: FeedItem }> = ({ item }) => {
-  const href = item.kind === 'article' ? `/articles/${item.id}` : `/post/${item.id}`;
-  const typeKey = item.kind === 'article' ? 'article' : (item.post_type || 'post');
-  const badgeClass = TYPE_BADGE[typeKey] ?? TYPE_BADGE.post;
-  const badgeLabel = TYPE_LABEL[typeKey] ?? 'Пост';
+  // Статьи ведут на /articles/:id, посты — на /post/:id
+  const href     = item.kind === 'article' ? `/articles/${item.id}` : `/post/${item.id}`;
+  const typeKey  = item.kind === 'article' ? 'article' : (item.post_type || 'post');
+  const badgeClass  = TYPE_BADGE[typeKey] ?? TYPE_BADGE.post;
+  const badgeLabel  = TYPE_LABEL[typeKey] ?? 'Пост';
 
   return (
     <Link
@@ -173,6 +162,7 @@ const FeedCard: React.FC<{ item: FeedItem }> = ({ item }) => {
     >
       <div className="flex items-start gap-3">
         <div className="flex-1 min-w-0">
+          {/* Бейджи: закреплено, тип, игра */}
           <div className="flex items-center gap-2 flex-wrap mb-1">
             {item.is_pinned && (
               <span className="text-xs text-indigo-400">📌</span>
@@ -186,8 +176,14 @@ const FeedCard: React.FC<{ item: FeedItem }> = ({ item }) => {
               </span>
             )}
           </div>
+
+          {/* Заголовок */}
           <h3 className="font-semibold text-white leading-snug">{item.title}</h3>
+
+          {/* Превью текста */}
           <p className="text-slate-400 text-sm mt-1 line-clamp-2">{item.excerpt}</p>
+
+          {/* Мета: автор и дата */}
           <div className="flex items-center gap-3 mt-2">
             <span className="text-xs text-slate-500">{item.nickname}</span>
             <span className="text-xs text-slate-600">

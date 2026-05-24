@@ -16,10 +16,27 @@ function formatDate(iso: string): string {
 }
 
 const MessageList: React.FC<Props> = ({ messages, currentUserId }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const isNearBottom = useRef(true);
 
+  const handleScroll = () => {
+    const el = containerRef.current;
+    if (!el) return;
+    isNearBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+  };
+
+  // Scroll to bottom when room changes (messages reset)
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    isNearBottom.current = true;
+    bottomRef.current?.scrollIntoView({ behavior: 'instant' });
+  }, [messages[0]?.room_slug]);
+
+  // Auto-scroll only if user is already near the bottom
+  useEffect(() => {
+    if (isNearBottom.current) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages.length]);
 
   if (messages.length === 0) {
@@ -33,7 +50,7 @@ const MessageList: React.FC<Props> = ({ messages, currentUserId }) => {
   let lastDate = '';
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 py-3 space-y-1">
+    <div ref={containerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto px-4 py-3 space-y-1">
       {messages.map((msg) => {
         const msgDate = formatDate(msg.created_at);
         const showDateSep = msgDate !== lastDate;
