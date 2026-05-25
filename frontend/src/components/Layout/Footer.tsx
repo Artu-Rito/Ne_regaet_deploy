@@ -18,12 +18,10 @@ const Footer: React.FC = () => (
           <div className="text-slate-300 font-semibold text-sm uppercase tracking-wider mb-3">Разделы</div>
           <ul className="space-y-2 text-sm text-slate-500">
             {[
-              { to: '/test',       label: 'Тест сети' },
-              { to: '/news',       label: 'Лента' },
-              { to: '/articles',   label: 'Статьи' },
-              { to: '/lfg',        label: 'Найти команду' },
-              { to: '/leaderboard', label: 'Таблица лидеров' },
-              { to: '/chat',       label: 'Чат' },
+              { to: '/test',  label: 'Тест сети' },
+              { to: '/news',  label: 'Лента' },
+              { to: '/lfg',   label: 'Найти команду' },
+              { to: '/chat',  label: 'Чат' },
             ].map((l) => (
               <li key={l.to}>
                 <Link to={l.to} className="hover:text-indigo-400 transition-colors">{l.label}</Link>
