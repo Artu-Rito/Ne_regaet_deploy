@@ -4,8 +4,6 @@ import { useAuthStore } from '../store/authStore';
 import { networkService } from '../services/networkService';
 import { GameServer } from '../types/network';
 import BarVisualizer from '../components/NetworkTest/BarVisualizer';
-import TestChart from '../components/NetworkTest/TestChart';
-import dayjs from 'dayjs';
 
 // ── Описания метрик пинга ────────────────────────────────────────────────────
 // Отображаются под каждым виджетом — помогают понять что означает цифра
@@ -51,7 +49,7 @@ const SpeedGauge: React.FC<{ label: string; value: number | null; unit: string }
 
 // ── Главный компонент страницы ───────────────────────────────────────────────
 const NetworkTestPage: React.FC = () => {
-  const { isTesting, currentTest, tests, startTest, getTests } = useTestStore();
+  const { isTesting, currentTest, startTest } = useTestStore();
   const { isAuthenticated } = useAuthStore();
   const [servers, setServers] = useState<GameServer[]>([]);
   const [selectedServer, setSelectedServer] = useState<string>('');
@@ -66,8 +64,7 @@ const NetworkTestPage: React.FC = () => {
       setServers(res.servers);
       if (res.servers.length > 0) setSelectedServer(res.servers[0].id);
     });
-    if (isAuthenticated) getTests(1, 20);
-  }, [isAuthenticated]);
+  }, []);
 
   // Запуск пинг-теста — требует авторизации для сохранения результата
   const handlePingTest = () => {
@@ -224,18 +221,6 @@ const NetworkTestPage: React.FC = () => {
           </div>
         )}
 
-        {/* График истории пинга — показывается только если есть хотя бы 2 точки */}
-        {tests.length > 1 && (
-          <div className="space-y-3">
-            <h3 className="text-base font-semibold text-slate-300">История пинга</h3>
-            <TestChart
-              data={[...tests].reverse().map((t) => ({
-                time: dayjs(t.tested_at).format('DD.MM HH:mm'),
-                ping: Math.round(t.ping),
-              }))}
-            />
-          </div>
-        )}
       </section>
 
       {/* Разделитель между двумя блоками */}
